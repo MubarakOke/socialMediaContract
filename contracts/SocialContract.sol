@@ -50,14 +50,14 @@ contract SocialMedia is AccessControl {
   // store groups
   mapping(string => Group) public groups;
   mapping(string => address) public groupmembers;
-  Group[] groupArray;
+  Group[] public groupArray;
 
   // store comments on NFTs
   mapping(uint256 => Comment[]) public comments;
 
   // store posts on NFTs
   mapping(uint256 => Post) public posts;
-  Post[] postArray;
+  Post[] public postArray;
 
   // search (author)
   mapping(address => Post[]) private postsByAuthor;
