@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "./NFTFactory.sol";
+import "./INFTFactory.sol";
 import "./INFT.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -41,7 +41,7 @@ contract SocialMedia is AccessControl {
   uint256 postID;
 
   // Factory contract for NFT creation
-  NFTFactory public nftFactory;
+  INFTFactory public nftFactory;
 
   // store user information
   mapping(address => User) public users;
@@ -76,10 +76,12 @@ contract SocialMedia is AccessControl {
 
 
   // Constructor to set up roles
-  constructor() {
+  constructor(address NFTFActoryAddress) {
     _setRoleAdmin(ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
     
     _grantRole(ADMIN_ROLE, msg.sender);
+
+    nftFactory= INFTFactory(NFTFActoryAddress);
   }
 
   // Register a new user
