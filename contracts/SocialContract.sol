@@ -5,8 +5,9 @@ import "./INFTFactory.sol";
 import "./INFT.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
 
-contract SocialMedia is AccessControl {
+contract SocialMedia is Context, AccessControl {
   // Structure for user information
   struct User {
     string username;
@@ -45,7 +46,7 @@ contract SocialMedia is AccessControl {
 
   // store user information
   mapping(address => User) public users;
-  User[] userArray;
+  User[] public userArray;
 
   // store groups
   mapping(string => Group) public groups;
@@ -79,57 +80,57 @@ contract SocialMedia is AccessControl {
   constructor(address NFTFActoryAddress) {
     _setRoleAdmin(ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
     
-    _grantRole(ADMIN_ROLE, msg.sender);
+    _grantRole(ADMIN_ROLE, _msgSender());
 
     nftFactory= INFTFactory(NFTFActoryAddress);
   }
 
   // Register a new user
   function register(string memory username) public {
-    require(!users[msg.sender].isActive, "User already registered");
+    require(!users[_msgSender()].isActive, "User already registered");
     address userNFTAddress = address(nftFactory.createNFT(username));
     User memory newUser = User(username, true, userNFTAddress);
 
-    users[msg.sender] = newUser;
+    users[_msgSender()] = newUser;
     userArray.push(newUser);
 
-    _grantRole(USER_ROLE, msg.sender);
-    emit UserRegistered(msg.sender, username);
+    _grantRole(USER_ROLE, _msgSender());
+    emit UserRegistered(_msgSender(), username);
   }
 
   // Create a new NFT text post
   function createTextPost(string memory uri) public onlyRole(USER_ROLE) {
-    uint256 postNFTId = nftFactory.mintText(users[msg.sender].userNFT, msg.sender, uri);
-    Post memory newPost = Post(postID, postNFTId, msg.sender);
+    uint256 postNFTId = nftFactory.mintText(users[_msgSender()].userNFT, _msgSender(), uri);
+    Post memory newPost = Post(postID, postNFTId, _msgSender());
     posts[postID] = newPost;
     postArray.push(newPost);
 
-    postsByAuthor[msg.sender].push(newPost);
+    postsByAuthor[_msgSender()].push(newPost);
     
     postID= postID + 1;
-    emit NFTCreated(msg.sender, postNFTId, uri);
+    emit NFTCreated(_msgSender(), postNFTId, uri);
   }
 
   // Create a new NFT multimedia post
   function createMultimediaPost(string memory imageURI) public onlyRole(USER_ROLE) {
-    uint256 postNFTId = nftFactory.mintMultiMedia(users[msg.sender].userNFT, msg.sender, imageURI);
-    Post memory newPost = Post(postID, postNFTId, msg.sender);
+    uint256 postNFTId = nftFactory.mintMultiMedia(users[_msgSender()].userNFT, _msgSender(), imageURI);
+    Post memory newPost = Post(postID, postNFTId, _msgSender());
     posts[postID] = newPost;
     postArray.push(newPost);
 
     postID= postID + 1;
-    emit NFTCreated(msg.sender, postNFTId, imageURI);
+    emit NFTCreated(_msgSender(), postNFTId, imageURI);
   }
 
   // Create a new group/community
   function createGroup(string memory name) public onlyRole(USER_ROLE) {
     require(groups[name].creator == address(0), "Group already exists");
-    Group memory newGroup= Group(name, msg.sender);
+    Group memory newGroup= Group(name, _msgSender());
     groups[name] = newGroup;
-    groupmembers[name]= msg.sender;
+    groupmembers[name]= _msgSender();
     groupArray.push(newGroup);
 
-    emit GroupCreated(name, msg.sender);
+    emit GroupCreated(name, _msgSender());
   }
 
   // Join a group/community
@@ -137,7 +138,7 @@ contract SocialMedia is AccessControl {
     Group storage group = groups[name];
     require(group.creator != address(0), "Group does not exist");
 
-    groupmembers[name]= msg.sender;
+    groupmembers[name]= _msgSender();
   }
 
   // Add a comment to an NFT post
@@ -145,8 +146,8 @@ contract SocialMedia is AccessControl {
     Post storage post= posts[postId];
     require(post.creator != address(0), "post does not exist");
 
-    comments[postId].push(Comment(msg.sender, content));
-    emit CommentAdded(postId, msg.sender, content);
+    comments[postId].push(Comment(_msgSender(), content));
+    emit CommentAdded(postId, _msgSender(), content);
   }
 
   // Search by Author
