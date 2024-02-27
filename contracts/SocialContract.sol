@@ -59,6 +59,9 @@ contract SocialMedia is AccessControl {
   mapping(uint256 => Post) public posts;
   Post[] postArray;
 
+  // search (author)
+  mapping(address => Post[]) private postsByAuthor;
+
   // Event for NFT creation
   event NFTCreated(address creator, uint256 tokenId, string uri);
 
@@ -74,7 +77,9 @@ contract SocialMedia is AccessControl {
 
   // Constructor to set up roles
   constructor() {
-    grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    _setRoleAdmin(ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
+    
+    _grantRole(ADMIN_ROLE, msg.sender);
   }
 
   // Register a new user
@@ -97,6 +102,8 @@ contract SocialMedia is AccessControl {
     posts[postID] = newPost;
     postArray.push(newPost);
 
+    postsByAuthor[msg.sender].push(newPost);
+    
     postID= postID + 1;
     emit NFTCreated(msg.sender, postNFTId, uri);
   }
@@ -138,5 +145,10 @@ contract SocialMedia is AccessControl {
 
     comments[postId].push(Comment(msg.sender, content));
     emit CommentAdded(postId, msg.sender, content);
+  }
+
+  // Search by Author
+  function searchPostsByAuthor(address _author) public view returns (Post[] memory) {
+        return postsByAuthor[_author];
   }
 }

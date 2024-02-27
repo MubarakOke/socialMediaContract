@@ -10,7 +10,7 @@ contract NFT is ERC721URIStorage {
 
     constructor(string memory name) ERC721(name, "SNFT") {}
 
-    function simplifiedFormatTokenURI(string memory imageURI)
+    function simplifiedFormatMultimediaURI(string memory imageURI)
         public
         pure
         returns (string memory)
@@ -27,30 +27,34 @@ contract NFT is ERC721URIStorage {
         return string(abi.encodePacked(baseURL, jsonBase64Encoded));
     }
 
-    function mintText(address to, string memory uri) public returns(uint256){
-        uint256 newItemId = _tokenIds;
-        _mint(to, newItemId);
-        _setTokenURI(newItemId, uri);
+    function simplifiedFormatTextURI(string memory textURI)
+        public
+        pure
+        returns (string memory)
+    {
+        string memory baseURL = "data:application/json;base64,";
+        string memory json = string(
+            abi.encodePacked(
+                '{"name": "SocialNFT", "description": "A social media APP NFT", "text":"',
+                textURI,
+                '"}'
+            )
+        );
+        string memory jsonBase64Encoded = Base64.encode(bytes(json));
+        return string(abi.encodePacked(baseURL, jsonBase64Encoded));
+    }
 
-        _tokenIds= _tokenIds + 1;
+    function mintText(address to, string memory uri, uint _tokenID) public {
+        string memory tokenURI = simplifiedFormatTextURI(uri);
 
-        return  newItemId;
+        _mint(to, _tokenID);
+        _setTokenURI(_tokenID, tokenURI);
     } 
 
-    function mintMultiMedia(address to, string memory imageURI) public returns(uint256){
-        /* Encode the SVG to a Base64 string and then generate the tokenURI */
-        // string memory imageURI = svgToImageURI(svg);
-        string memory tokenURI = simplifiedFormatTokenURI(imageURI);
+    function mintMultiMedia(address to, string memory imageURI, uint _tokenID) public {
+        string memory tokenURI = simplifiedFormatMultimediaURI(imageURI);
 
-        /* Increment the token id everytime we call the mint function */
-        uint256 newItemId = _tokenIds;
-
-        /* Mint the token id and set the token URI */
-        _safeMint(to, newItemId);
-        _setTokenURI(newItemId, tokenURI);
-
-        _tokenIds= _tokenIds + 1;
-
-        return  newItemId;
+        _safeMint(to, _tokenID);
+        _setTokenURI(_tokenID, tokenURI);
     }
 }

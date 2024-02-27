@@ -6,6 +6,7 @@ import "contracts/Social Media/INFT.sol";
 
 contract NFTFactory {
     NFT[] socialNFTs;
+    uint256 _tokenIds;
 
     function createNFT(string memory name) external returns (NFT socialNFT_){
         socialNFT_ = new NFT(name);
@@ -18,14 +19,22 @@ contract NFTFactory {
     }
 
     function mintText(address NFTAddress, address to, string memory uri) public returns (uint256){
-        uint256 retunedID = INFT(NFTAddress).mintText(to, uri);
-        
-        return retunedID;
+        uint256 newItemId = _tokenIds;
+
+        INFT(NFTAddress).mintText(to, uri, newItemId);
+
+        _tokenIds= _tokenIds + 1;
+
+        return  newItemId;
     } 
 
     function mintMultiMedia(address NFTAddress, address to, string memory imageURI) public returns (uint256){
-        uint256 retunedID = INFT(NFTAddress).mintMultiMedia(to, imageURI);
+        uint256 newItemId = _tokenIds;
+
+        INFT(NFTAddress).mintMultiMedia(to, imageURI, newItemId);
         
-        return retunedID;
+        _tokenIds= _tokenIds + 1;
+
+        return  newItemId;
     }
 }
